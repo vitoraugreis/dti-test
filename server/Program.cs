@@ -13,6 +13,16 @@ builder.Services.AddOpenApiDocument(config =>
 });
 
 
+builder.Services.AddCors(options => {
+    options.AddPolicy(name: "Cors dti-test",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                .AllowAnyHeader().AllowAnyMethod();
+        });
+});
+
+
 var petshops = new List<PetShop>
 {
     new PetShop(
@@ -40,6 +50,7 @@ var petshops = new List<PetShop>
 builder.Services.AddSingleton(petshops);
 
 var app = builder.Build();
+app.UseCors("Cors dti-test");
 
 if (app.Environment.IsDevelopment())
 {
