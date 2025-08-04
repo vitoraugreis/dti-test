@@ -107,7 +107,7 @@ function MainPage() {
                 <BackgroundImageContainer />
                 <ContentContainer>
                     <Typography variant="h4" component="h1" align="center" gutterBottom>
-                        Calculadora de Melhor Petshop para Banho
+                        Calculadora de Melhor Petshop
                     </Typography>
 
                     <Box component="form" onSubmit={formSubmit} noValidate sx={{ mb: 4 }}>
