@@ -1,17 +1,76 @@
 import { useState } from "react";
+import {
+    ThemeProvider,
+    Box,
+    Typography,
+    TextField,
+    Button,
+    Stack,
+    Card,
+    CardContent,
+    createTheme
+} from '@mui/material';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { ptBR } from 'date-fns/locale';
+import styled, { createGlobalStyle } from 'styled-components';
+
+
+const GlobalStyle = createGlobalStyle`
+  * { box-sizing: border-box; }
+  html, body, #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+  }
+`;
+
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Roboto, sans-serif',
+  },
+});
+
+const PageContainer = styled.div`
+  display: grid;
+  grid-template-columns: 60% 1fr; 
+  width: 100%;
+  height: 100vh;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const BackgroundImageContainer = styled.div`
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  
+  @media (max-width: 900px) {
+    display: none;
+  }
+`;
+
+const ContentContainer = styled.div`
+  padding: 40px;
+  overflow-y: auto;
+  background-color: #95b9d6;
+`;
+
 
 function MainPage() {
-    const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
+    const [dataConsulta, setDataConsulta] = useState(new Date());
     const [qntdCaesPequenos, setQntdCaesPequenos] = useState('');
     const [qntdCaesGrandes, setQntdCaesGrandes] = useState('');
-
     const [melhorPetshop, setMelhorPetshop] = useState(null);
-    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // Função para lançar a consulta ao backend e receber o resultado (ou um erro).
     const formSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
         setMelhorPetshop(null);
 
@@ -38,62 +97,58 @@ function MainPage() {
             
         } catch (err) {
             setError(err.message);
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
-        <div>
-            <h1>Calculadora de Melhor Petshop</h1>
-            <form onSubmit={formSubmit}>
-                <div>
-                    <label>Insira a data do banho:</label>
-                    <input
-                        type="date"
-                        value={dataConsulta}
-                        onChange={e => setDataConsulta(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Quantidade de cães de raça pequena:</label>
-                    <input
-                        type="number"
-                        min="0"
-                        value={qntdCaesPequenos}
-                        onChange={e => setQntdCaesPequenos(e.target.value)}
-                        placeholder="Ex: 2"
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Quantidade de cães de raça grande:</label>
-                    <input
-                        type="number"
-                        min="0"
-                        value={qntdCaesGrandes}
-                        onChange={e => setQntdCaesGrandes(e.target.value)}
-                        placeholder="Ex: 1"
-                        required
-                    />
-                </div>
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Buscando...' : 'Fazer consulta'}
-                </button>
-            </form>
-            <hr />
-            
-            {error && <p style={{color: 'red'}}>Erro: {error}</p>}
+        <ThemeProvider theme={theme}>
+            <GlobalStyle />
+            <PageContainer>
+                <BackgroundImageContainer />
+                <ContentContainer>
+                    <Typography variant="h4" component="h1" align="center" gutterBottom>
+                        Calculadora de Melhor Petshop para Banho
+                    </Typography>
 
-            {melhorPetshop && (
-                <div style={{marginTop: '20px', border: '1px solid #4CAF50', padding: '15px', borderRadius: '5px'}}>
-                    <h3>🏆 Melhor Opção Encontrada:</h3>
-                    <p><strong>Petshop:</strong> {melhorPetshop.nomePetshop}</p>
-                    <p><strong>Custo Total:</strong> {melhorPetshop.custoTotalPetshop.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                </div>
-            )}
-        </div>
+                    <Box component="form" onSubmit={formSubmit} noValidate sx={{ mb: 4 }}>
+                        <Stack spacing={3}>
+                            <Stack direction="row" spacing={2}>
+                                <TextField fullWidth type="number" label="Cães Pequenos" value={qntdCaesPequenos} onChange={e => setQntdCaesPequenos(e.target.value)} />
+                                <TextField fullWidth type="number" label="Cães Grandes" value={qntdCaesGrandes} onChange={e => setQntdCaesGrandes(e.target.value)} />
+                            </Stack>
+                            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+                                <DatePicker label="Data do Banho" value={dataConsulta} onChange={(novaData) => setDataConsulta(novaData)} />
+                            </LocalizationProvider>
+                            <Button type="submit" variant="contained" size="large"> Fazer Consulta </Button>
+                        </Stack>
+                    </Box>
+
+                    {error && (
+                        <Typography color="error" align="center">
+                            Erro: {error}
+                        </Typography>
+                    )}
+                    {melhorPetshop && (
+                        <Card variant="outlined" sx={{ bgcolor: '#f1f8e9' }}>
+                            <CardContent>
+                                <Typography variant="h6" component="h3" gutterBottom>
+                                    🏆 Melhor Opção Encontrada:
+                                </Typography>
+                                <Typography variant="body1">
+                                    <strong>Petshop:</strong> {melhorPetshop.nomePetshop}
+                                </Typography>
+                                <Typography variant="body1">
+                                    <strong>Distância:</strong> {melhorPetshop.distanciaPetshop} km
+                                </Typography>
+                                <Typography variant="body1">
+                                    <strong>Custo Total:</strong> {melhorPetshop.custoTotalPetshop.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    )}
+                </ContentContainer>
+            </PageContainer>
+        </ThemeProvider>
     );
 }
 

@@ -68,6 +68,9 @@ app.MapPost("/api/calculo", ([FromBody] DataDto dados, [FromServices] List<PetSh
 {
     if (dados.QntdCaesPequenos < 0 || dados.QntdCaesGrandes < 0)
         return Results.BadRequest("A quantidade de cães não pode ser negativa.");
+    
+    if (dados.QntdCaesPequenos == 0 && dados.QntdCaesGrandes == 0)
+        return Results.BadRequest("A quantidade total de cães não pode ser zero.");
 
     var resultados = petshopsList.Select(petshop => new
     {
